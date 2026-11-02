@@ -17,7 +17,7 @@ let socket = null
 
 onMounted(() => {
   // test server
-  socket = new WebSocket('ws://localhost:8080')
+  socket = new WebSocket('ws://localhost:8081')
 
   socket.addEventListener('open', () => {
     status.value = 'Connected'
@@ -36,6 +36,7 @@ onMounted(() => {
   socket.addEventListener('close', () => {
     status.value = 'Disconnected'
   })
+
 })
 
 function sendMessage(message) {
