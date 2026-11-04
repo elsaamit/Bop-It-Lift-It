@@ -1,42 +1,30 @@
 import {ref} from 'vue'
-const status = ref('Disconnected')
-const lastMessage = ref(null)
+import { handleMessage } from './control'
+
 
 let socket = null
 
 //connects websocket
 function connect() {
+    
+    //if already open
     if (socket && socket.readyState !== WebSocket.CLOSED){
         return
     }
+
+    socket = new WebSocket('ws://localhost:8081')
+
+    socket.addEventListener('message', (event) => {
+        try {
+            const message = JSON.parse(event.data)
+            handleMessage(message)
+        } catch (error){
+            console.error('Invalid message', error)
+        }
+    })
 }
 
-//initializes websocket
-socket = new WebSocket('ws://localhost:8081')
-
-socket.addEventListener('open', () => {
-    status.value = 'Connected'
-    
-    sendMessage({
-        version: 1,
-        type: 'get_game_status',
-        request_id: 'status-01'
-    })
-})
-
-//receive messages from ESP32
-socket.addEventListener('message', (event) => {
-    try{
-        const message = JSON.parse(event.data)
-        lastMessage.value = message
-
-        console.log('Received:', message)
-    } catch (error){
-        console.error('Invalid JSON:', error)
-    }
-})
-
-//send message to ESP32
+//send message to ESP32 in JSON format
 function sendMessage(message){
     if(socket?.readyState === WebSocket.OPEN){
         socket.send(JSON.stringify(message))
@@ -45,9 +33,7 @@ function sendMessage(message){
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//GAME FUNCTIONS//
+//start game- send to esp
 function startGame(){
     sendMessage({
         version: 1,
@@ -56,10 +42,20 @@ function startGame(){
     })
 }
 
+//end game- send to esp
+function endGame(){
+    sendMessage({
+        version: 1,
+        type: 'end_game',
+        request_id: crypto.randomUUID()
+    })
+}
+
+
+
 export{
-    status,
-    lastMessage,
     connect,
     sendMessage,
-    startGame
+    startGame,
+    endGame
 }

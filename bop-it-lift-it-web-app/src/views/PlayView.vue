@@ -1,16 +1,35 @@
 <template>
     <main>
-        <p> Main page for gameplay </p>
-        <button @click="startGame"> Start </button>
-        <p> Latest message: {{ lastMessage }}</p>
+        //haven't started yet
+        <div v-if="gameState === 'idle'">
+          <button @click="startGame"> Start </button>
+        </div>
+
+        //playing
+        <div v-if="gameState=== 'playing'">
+          <h2 v-if="currentPrompt"> {{  currentPrompt.text }} </h2>
+        </div>
+
+        <div v-if="gameState=== 'gameOver'">
+          <h2>Game Over</h2>
+          <h2> Final Score: {{ finalScore }}</h2>
+        </div>
     </main>
 </template>
 
 <script setup>
+
   import {
-    lastMessage,
+    gameState,
+    score,
+    command,
+    finalScore
+  } from '@/services/control'
+
+  import {
     connect,
-    startGame
+    startGame,
+    stopGame
   } from '@/services/websocket'
 
   import {onMounted} from 'vue'
