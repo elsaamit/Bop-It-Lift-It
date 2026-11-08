@@ -159,7 +159,7 @@ void finishRep(CurlType detected) {
   }else {
     misses++;
     // toneFail();
-    feedbackLine = (detected == CURL_NONE) ? "Too slow!" : String("Got: ") + curlName(detected);
+    feedbackLine = (detected == CURL_NONE) ? "Too slow!" : String("Missed: ") + curlName(detected);
   }
   setState(ST_FEEDBACK);
 }
@@ -254,8 +254,8 @@ void loop() {
           else {
             nextMove();
           }
-          break;
         }
+        break;  // only runs after the timer ends
 
         case ST_GAME_OVER:
           if (draw) {
