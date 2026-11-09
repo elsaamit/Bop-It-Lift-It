@@ -4,7 +4,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
-// #include <WebServer.h> 
+// #include <ArduinoJson.h> 
 // #include <WebSocketServer.h>
 // #include <WiFi.h>
 
@@ -55,6 +55,7 @@ int score = 0, misses = 0, roundNum = 0;
 unsigned long stateEnteredAt = 0;
 unsigned long lastDraw = 0;
 bool appStartRequested = false;         // set when the app's Start button is pressed
+bool appEndRequested = false;
 String feedbackLine = "";
 
 // Socket Server Info
@@ -147,6 +148,21 @@ void nextMove() {
   lastDetected = CURL_NONE;
   // toneCue();   -- used for proceeding to next move
   setState(ST_WAIT_START);
+  sendCommandUpdate();
+}
+
+void startNewGame() {
+  score = misses = roundNum = 0;
+  target = lastDetected = CURL_NONE;
+  lastCorrect = false;
+  sendGameStarted();
+  sendScoreUpdate();
+  nextMove();
+}
+
+void goGameOver() {
+  setState(ST_GAME_OVER);
+  sendGameOver();
 }
 
 void finishRep(CurlType detected) {
@@ -162,6 +178,8 @@ void finishRep(CurlType detected) {
     feedbackLine = (detected == CURL_NONE) ? "Too slow!" : String("Missed: ") + curlName(detected);
   }
   setState(ST_FEEDBACK);
+  sendUserResult(lastCorrect, detected);
+  sendScoreUpdate();
 }
 
 void setup(){
@@ -183,12 +201,24 @@ void setup(){
     while (true) delay(1000);
   }
   // imuBegin();                       // integrated_sensors.ino
+  appBegin();
+  String addr = appAddress();
+  showMessage("APP Address: ", addr.c_str());
+  delay(2500);
   resetGame();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   unsigned long now = millis();
+  appLoop(); // logic for game
+  if (appEndRequested) {
+    appEndRequested = false;
+    if (state != ST_IDLE && state != ST_GAME_OVER) {
+      goGameOver();
+    }
+  }
+
   bool draw = (now - lastDraw >= DRAW_MS);
   if (draw){
     lastDraw = now;
@@ -207,7 +237,7 @@ void loop() {
     // until the app is connected, the tare button acts as START
     if (appStartRequested || tareBtn.pressed()){
       appStartRequested = false;
-      nextMove();
+      startNewGame();
     }
     break;
 
@@ -249,10 +279,10 @@ void loop() {
         }
         if (now - stateEnteredAt > FEEDBACK_MS ) {
           if (misses >= MAX_MISSES){
-            setState(ST_GAME_OVER);
+            goGameOVer();
           }
           else {
-            nextMove();
+            startNewGame();
           }
         }
         break;  // only runs after the timer ends
@@ -263,7 +293,7 @@ void loop() {
           }
           if (appStartRequested || tareBtn.pressed()) {
             appStartRequested = false;
-            resetGame();
+            startNewGame();
           }
           break;
       }
