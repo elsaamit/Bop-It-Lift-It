@@ -1,9 +1,9 @@
 <template>
-    <div class="row">
-      <button class="link-button" @click="$router.push({ name: 'how-to-play' })" >How to Play</button>
-      <button class="link-button" @click="$router.push({ name: 'demo' })" >Video Demos</button>
-      <button class="link-button" @click="$router.push({ name: 'home' })" >Home</button>
-    </div>
+    <footer class="app-footer">
+      <button class="link-button" @click="$router.push({ name: 'how-to-play' })" >HOW TO PLAY</button>
+      <button class="link-button" @click="$router.push({ name: 'demo' })" >DEMOS</button>
+      <button class="link-button" @click="$router.push({ name: 'home' })" >HOME</button>
+    </footer>
 </template>
 
 <script>
@@ -15,33 +15,45 @@ export default {
 
 <style scoped>
 
-a {
-  color: #424eb9ff;
-}
-
-.row{
+.app-footer {
   display: flex;
-  margin: 0 10px;
-  gap: 100px;
   justify-content: center;
-  width: 100%;
   align-items: center;
+  gap: clamp(15px, 8vw, 120px);
+  width: 100%;
+  padding: 20px 24px;
+  box-sizing: border-box;
 }
 
-.link-button{
-  margin: 0;
-  border: none;
-  padding: 10px 25px;
-  background-color: #2b5080ff;
+.link-button {
+  background: #294f7a;
   color: white;
-  border-radius: 25px;
-  font-size: 16px;
-  cursor: pointer;
+  border: 1px solid #42658c;
+  border-radius: 12px;
+  padding: 13px 20px;
   width: 170px;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
 }
 
-.link-button:hover{
-  background-color: #54729cff
+.link-button:hover {
+  background: #3d6897;
+  transform: translateY(-2px);
 }
 
+@media (max-width: 600px) {
+  .app-footer {
+    gap: 8px;
+    padding: 12px 8px;
+  }
+
+  .link-button {
+    width: auto;
+    flex: 1;
+    padding: 12px 5px;
+    font-size: 11px;
+  }
+}
 </style>

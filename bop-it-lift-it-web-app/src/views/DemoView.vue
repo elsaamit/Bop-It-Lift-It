@@ -11,8 +11,8 @@
             <img class="image" src="../assets/hammer.gif">
           </div>
           <div>
-            <h3> Double Arm Curl </h3>
-            <img class="image" src="../assets/double.png">
+            <h3> Preacher Curl </h3>
+            <img class="image" src="../assets/preacher.png">
           </div>
         </div>
 
