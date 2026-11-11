@@ -10,14 +10,14 @@
 //    still integrated the button for tare
 // need to still test
 
-//  Pins (ESP32-WROOM DevKit)
-const int PIN_TEAR   = 21;  // tare (reset axis) button
-const int PIN_SDA    = 22;  // BNO055 SDA
-const int PIN_SCL    = 23;  // BNO055 SCL
-const int PIN_OLED_SDA = 33; // OLED SDA
-const int PIN_OLED_SCL = 32; // OLED SCL
-const int PIN_TOUCH  = 34;  // touch sensor #1 (start)
-const int PIN_TOUCH2 = 35;  // touch sensor #2 (target / cancel)
+//  Pins (ESP32-WROOM DevKit)  ---> UPDATED 10:54 AM, 11/9/26
+const int PIN_TARE   = 13;  // tare (reset axis) button --> IO13
+const int PIN_SDA    = 8;  // BNO055 SDA   --> IO8
+const int PIN_SCL    = 9;  // BNO055 SCL   --> IO9
+// const int PIN_OLED_SDA = 33; // OLED SDA     // prototyping purposes
+// const int PIN_OLED_SCL = 32; // OLED SCL     // prototyping purposes
+const int PIN_TOUCH  = 4;  // touch sensor #1 (IO4)
+const int PIN_TOUCH2 = 5;  // touch sensor #2 (IO5)
 
 // reps detecting (need to calibrate)
 const float TOP_ANGLE_DEG           = 90.0;  // rep counts as "at the top" past this
@@ -30,7 +30,7 @@ const unsigned long SETTLE_MS      = 3000;  // the wait in WAIT_START ebfore aut
 const unsigned long REP_TIMEOUT_MS = 12000;
 const unsigned long FEEDBACK_MS    = 3000;  // how long the screen stays on
 const unsigned long SAMPLE_MS      = 30;   // 100 Hz sensor loop (BNO055 fusion rate)
-const unsigned long DRAW_MS         =  30; // oled refresh rate
+// const unsigned long DRAW_MS         =  30; // oled refresh rate
 const int MAX_MISSES = 3;
 
 // CONNECTION TO THE WEB APP: WIFI LINK
@@ -39,7 +39,7 @@ const int MAX_MISSES = 3;
 const bool WIFI_USE_AP = true;
 const char* const WIFI_SSID = "LiftIt-ESP32";
 const char* const WIFI_PASS = "JDliftit26"; //password has to be 8+ characters
-const unit16_t WS_PORT = 8081;   // matches the port in websocket.js
+const uint16_t WS_PORT = 8081;   // matches the port in websocket.js
 
 //  Shared types 
 enum CurlType  { CURL_NONE, CURL_BICEP, CURL_HAMMER, CURL_PREACHER };
