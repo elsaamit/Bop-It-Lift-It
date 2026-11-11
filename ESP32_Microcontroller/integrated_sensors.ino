@@ -1,20 +1,17 @@
 /*
   integrated_sensors.ino
-  ----------------------
   Sensor + screen helpers for the Lift-It game.
-  This tab does not have  setup(), loop(), and  pin numbers:
-    - pins and tuning values come from configurations.h
-    - game logic lives in ESP32_Microcontroller.ino
+  
 
   Functions the main file can use:
-    imuBegin()          start the BNO055 (call in setup after Wire.begin)
-    imuGravity()        current gravity direction as a Vec3
-    imuHandleRatio()    0 = handle level, 1 = handle vertical (hammer grip)
-    bothHandsOn()       true when both touch sensors are touched
-    displayBegin()      start the OLED (call in setup after Wire1.begin)
+    imuBegin()  --->  start the BNO055 (call in setup after Wire.begin)
+    imuGravity()   --->      current gravity direction as a Vec3
+    imuHandleRatio() --->    0 = handle level, 1 = handle vertical (hammer grip)
+    bothHandsOn()  --->     true when both touch sensors are touched
+    displayBegin() --->   start the OLED (call in setup after Wire1.begin)
     showMessage(), showWaitStart(), showInRep(), showFeedback(), showGameOver()
     toneSuccess(), toneFail()
-    printDebug()        live values to Serial Monitor
+    printDebug()  --->      live values to Serial Monitor
 */
 
 #include <configurations.h>
@@ -69,17 +66,17 @@ bool bothHandsOn() {
   return digitalRead(PIN_TOUCH) == HIGH && digitalRead(PIN_TOUCH2) == HIGH;
 }
 
-// Sounds (fill these in once you add a buzzer)
+// Sounds (Josh's voice??)
 
 // void toneSuccess() { Serial.println(">>> SUCCESS"); }
 // void toneFail()    { Serial.println(">>> FAIL"); }
 
-// OLED (on its own I2C bus: Wire1)
+/////////////////// // OLED (Wire1) ** FOR TESTING PURPOSES WITHOUT WEB APP**  /////////////////////////////////////////
+// Adafruit_SSD1306 oled(128, 64, &Wire1, -1);
+// const uint8_t OLED_ADDR = 0x3C;   // try 0x3D if the screen isn't found
+// const char DEG = (char)247;
 
-Adafruit_SSD1306 oled(128, 64, &Wire1, -1);
-const uint8_t OLED_ADDR = 0x3C;   // try 0x3D if the screen isn't found
-const char DEG = (char)247;
-
+/*
 bool displayBegin() {
   if (!oled.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
     Serial.println("OLED not found! Check wiring / address.");
@@ -169,8 +166,6 @@ void showGameOver(int score) {
 
 
 // Debug output (Serial Monitor, 115200 baud)
-
-
 const bool DEBUG = true;
 
 void printDebug(const char* stateText, float repAngle) {
@@ -183,5 +178,169 @@ void printDebug(const char* stateText, float repAngle) {
   if (BNO){
     BNO->getCalibration(&sys, &gc, &ac, &mc);
   } 
+}
+*/
+
+///////////////////////// WEB APP INTEGRATION /////////////////////////////////////////////
+WebSocketServer webSocket(WS_PORT);
+const bool APP_DEBUG = true;    // this allows prints app messages to serial monitor
+
+//the app's PlayView.vue checks for different states: 'idle', 'playing', and 'gameOver'
+const char* appGameState() {
+  if (state == ST_IDLE) {
+    return "idle";
+  }
+  if (state == ST_GAME_OVER) {
+    return "gameOver";
+  }
+  return "playing";
+}
+
+String appAddress() {
+  IPAddress ip = WIFI_USE_AP ? WiFi.softAPIP() : WiFi.localIP();
+  return "ws://" + ip.toString() + ":" + String(WS_PORT);
+}
+
+void sendToJSON(JsonDocument& doc) {
+  String out;
+  serializeJson(doc, out);
+  webSocket.broadcastTXT(out);
+  if (APP_DEBUG) {
+    Serial.print("APP <--");
+    Serial.print(out);
+  }
+}
+
+void sendGameStarted() {
+  JsonDocument doc;
+  doc["version"] = 1;
+  doc["type"] = "game_started";
+  sendJson(doc);
+}
+
+void sendCommandUpdate() {
+  JsonDocument doc;
+  doc["version"] = 1;
+  doc["type"] = "command_update";
+  doc["command_id"] = roundNum;
+  doc["action"] = curlAction(target);
+  doc["text"] = curlPrompt(target);
+  doc["time_limit"] = REP_TIMEOUT_MS;
+  sendJson(doc);
+}
+
+void sendUserResult(bool correct, CurlType detected) {
+  JsonDocument doc;
+  doc["version"] = 1;
+  doc["type"] = "user_result";
+  doc["last_user_result"] = correct;
+  doc["detected"] = curlAction(detected);
+  sendJson(doc);
+}
+
+void sendScoreUpdate() {
+  JsonDocument doc;
+  doc["version"] = 1;
+  doc["type"]    = "score_update";
+  doc["score"]   = score;
+  sendJson(doc);
+}
+
+// full process of the game for the app (double check this)
+void fillStatus(JsonDocument& doc) {
+  doc["version"]    = 1;
+  doc["type"]       = "status_update";
+  doc["game_state"] = appGameState();
+  doc["score"]      = score;
+  if (state != ST_IDLE && state != ST_GAME_OVER && target != CURL_NONE) {
+    doc["command"]["command_id"] = roundNum;
+    doc["command"]["action"]     = curlAction(target);
+    doc["command"]["text"]       = curlPrompt(target);
+    doc["command"]["time_limit"] = REP_TIMEOUT_MS;
+  } else {
+    doc["command"] = nullptr;
+  }
+}
+
+void sendGameOver() {
+  JsonDocument doc;
+  doc["version"] = 1;
+  doc["type"] = "game_over";
+  doc["final_score"]= score;
+  sendJson(doc);
+// communication btwn control.js and PlayView checks
+  JsonDocument status;
+  fillStatus(status);
+  sendJson(status);
 
 }
+
+void onWsEvent(uint8_t client, WStype_t type, uint8_t* payload, size_t length) {
+  switch (type) {
+    case WStype_CONNECTED: {
+      Serial.println("App connected");
+      JsonDocument doc;
+      fillStatus(doc);
+      String out;
+      serializeJson(doc, out);
+      webSocket.sendTXT(client, out);
+      break;
+    }
+    
+    case WStype_DISCONNECTED:
+      Serial.println("App diconnected");
+      break;
+  
+    case WStype_TEXT: {   /// debugging case
+      JsonDocument doc;
+      if (deserializeJson(doc, payload, length)) {
+        Serial.println("App sent invalid JSON");
+        return;
+      }
+      const char* msgType = doc["type"] | "";
+      if (APP_DEBUG){
+        Serial.print("APP -->");
+        Serial.println(msgType);
+      }
+      if (strcmp(msgType, "start_game") == 0) {
+        appStartRequested = true;
+      }
+      else if (strcmp(msgType, "end_game") == 0) {
+        appEndRequested = true;
+      }
+      break;
+    }
+    // defualt 
+    default:
+      break;
+
+  }
+}
+
+
+void appBegin() {
+  if (WIFI_USE_AP) {
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(WIFI_SSID, WIFI_PASS);
+  } else {
+    Wifi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    unsigned long t0 = millis();
+    while (WiFi.status() != WL_CONNECTED && milis() - t0 < 15000){
+      delay(250);
+    }
+  } 
+
+  webSocket.begin();
+  webSocket.onEvent(onWsEvent);
+  Serial.print("App URL: ");
+  Serial.println(appAddress());
+}
+
+void appLoop() {
+  webSocket.loop();
+}
+
+
+
+
