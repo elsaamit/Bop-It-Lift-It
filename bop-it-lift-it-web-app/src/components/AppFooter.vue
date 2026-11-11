@@ -21,11 +21,11 @@ a {
 
 .row{
   display: flex;
-  margin: 0 10px;
-  gap: 100px;
-  justify-content: center;
+  margin: 0 0;
   width: 100%;
   align-items: center;
+  gap: 200px;
+  justify-content: center;
 }
 
 .link-button{

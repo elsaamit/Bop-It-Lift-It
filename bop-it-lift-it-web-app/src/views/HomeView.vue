@@ -47,7 +47,6 @@
   height: auto;
   margin: 20px auto;
   margin-top: 50px;
-  object-fix: contain;
 }
 
 .play-button{
@@ -64,6 +63,13 @@
 
 .play-button:hover{
   background-color: #9ebeecff
+}
+
+.footer {
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  align-items: center;
 }
 
 </style>

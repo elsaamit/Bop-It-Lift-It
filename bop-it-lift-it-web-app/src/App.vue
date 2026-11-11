@@ -1,7 +1,7 @@
 <template>
   <div>
     <router-view/>
-    <AppFooter/>
+    <AppFooter class="footer"/>
   </div>
 </template>
 
@@ -21,7 +21,6 @@ onMounted(() => {
 
   socket.addEventListener('open', () => {
     status.value = 'Connected'
-    console.log('WebSocket connected!')
   })
 
   socket.addEventListener('message', (event) => {
