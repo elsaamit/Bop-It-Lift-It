@@ -2,7 +2,7 @@
   <div class="container">
     <main class="main-content">
       <h1 class="title"> Bop It, Lift It </h1>
-      <img alt="enclosure" src="../assets/sketch.png" class="dumbbell-image">
+      <img alt="enclosure" src="../assets/dumbbell.png" class="dumbbell-image">
       <button class="play-button" @click="$router.push({name: 'play'})"> Play </button>
     </main>
 
@@ -16,13 +16,28 @@
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;;
+h1, h2, h3{
+  color: #f7f7f2;
 }
+
+p{
+  color: #c2c8d0;
+}
+
+html, body, #app{
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background: #111820;
+  color: #f7f7f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 
 .title {
   font-size: 64px;
