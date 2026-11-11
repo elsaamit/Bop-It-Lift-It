@@ -44,7 +44,7 @@ class Button {
     bool stable = HIGH, lastReading = HIGH;
     unsigned long changedAt = 0;
 };
-Button tareBtn(PIN_TEAR);
+Button tareBtn(PIN_TARE);
 
 
 // Global
@@ -188,7 +188,7 @@ void setup(){
   delay(500);
 
   Wire.begin(PIN_SDA, PIN_SCL);      // BNO055 9-axis
-  Wire1.begin(PIN_OLED_SDA, PIN_OLED_SCL);  // OLED
+  // Wire1.begin(PIN_OLED_SDA, PIN_OLED_SCL);  // OLED
 
   tareBtn.begin();
   pinMode(PIN_TOUCH, INPUT);
