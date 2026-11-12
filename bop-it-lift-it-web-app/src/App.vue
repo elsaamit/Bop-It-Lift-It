@@ -17,7 +17,7 @@ let socket = null
 
 onMounted(() => {
   // test server
-  socket = new WebSocket('ws://localhost:8081')
+  socket = new WebSocket('ws://192.168.4.1:8081')
 
   socket.addEventListener('open', () => {
     status.value = 'Connected'
