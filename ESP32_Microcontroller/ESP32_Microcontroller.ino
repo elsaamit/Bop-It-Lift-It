@@ -1,12 +1,12 @@
 
-#include <configurations.h>
+#include "configurations.h"
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
-// #include <ArduinoJson.h> 
-// #include <WebSocketServer.h>
-// #include <WiFi.h>
+#include <ArduinoJson.h> 
+#include <WebSocketsServer.h>
+#include <WiFi.h>
 
 /*
 This file is the main execution of the Lift-It Game
@@ -64,7 +64,7 @@ String feedbackLine = "";
 // void broadcastStatus(){
   // for now serial, later send this to the app over WebSocket
   // Serial.print("State: ");  Serial.print(stateName(state));
-  // Serial.print(" | Target: "); Serial.print(curlName(target));
+  // Serial.print(" | Target: "); Serial.print(curlAction(target));
   // Serial.print(" | Score: ");  Serial.print(score);
   // Serial.print(" | Misses: "); Serial.println(misses);
 // };
@@ -148,7 +148,7 @@ void nextMove() {
   lastDetected = CURL_NONE;
   // toneCue();   -- used for proceeding to next move
   setState(ST_WAIT_START);
-  sendCommandUpdate();
+  sendExerciseUpdate();
 }
 
 void startNewGame() {
@@ -160,12 +160,13 @@ void startNewGame() {
   nextMove();
 }
 
-void goGameOver() {
+void goGameOver(const char* reason) {
   setState(ST_GAME_OVER);
-  sendGameOver();
+  sendGameOver(reason);
 }
 
 void finishRep(CurlType detected) {
+  unsigned long responseTime = millis() - stateEnteredAt;  // time sent on the rep
   lastDetected = detected;
   lastCorrect = (detected == target);
   if (lastCorrect) { 
@@ -175,10 +176,15 @@ void finishRep(CurlType detected) {
   }else {
     misses++;
     // toneFail();
-    feedbackLine = (detected == CURL_NONE) ? "Too slow!" : String("Missed: ") + curlName(detected);
+    // feedbackLine = (detected == CURL_NONE) ? "Too slow!" : String("Missed: ") + curlName(detected);
+    if (detected == CURL_NONE) {
+      feedbackLine = "Too slow!";
+    } else {
+      feedbackLine = String("Missed: ") + curlAction(detected);
+    }
   }
   setState(ST_FEEDBACK);
-  sendUserResult(lastCorrect, detected);
+  sendUserResult(lastCorrect, responseTime);
   sendScoreUpdate();
 }
 
@@ -194,16 +200,19 @@ void setup(){
   pinMode(PIN_TOUCH, INPUT);
   pinMode(PIN_TOUCH2, INPUT);
 
-  displayBegin();
-  showMessage("LIFT-IT", "Starting sensors...");
+// bno055
+  // displayBegin();
+  // showMessage("LIFT-IT", "Starting sensors...");
   if (!imuBegin()){
-    showMessage("ERROR", "Check wiring");
+    Serial.println("ERROR - BNO055 not found, Check wiring");
     while (true) delay(1000);
   }
   // imuBegin();                       // integrated_sensors.ino
+
+  
   appBegin();
   String addr = appAddress();
-  showMessage("APP Address: ", addr.c_str());
+  // showMessage("APP Address: ", addr.c_str());
   delay(2500);
   resetGame();
 }
@@ -215,7 +224,7 @@ void loop() {
   if (appEndRequested) {
     appEndRequested = false;
     if (state != ST_IDLE && state != ST_GAME_OVER) {
-      goGameOver();
+      goGameOver("user_stopped");
     }
   }
 
@@ -223,17 +232,20 @@ void loop() {
   if (draw){
     lastDraw = now;
   } 
+
+// OLED screen
+
   // if (tareBtn.pressed()) {
   //   // logic needed
   //   //pressed = true;
   // }
 
-  printDebug(stateName(state), rep.angle);
+  // printDebug(stateName(state), rep.angle);
 
   switch (state) {
     
     case ST_IDLE:
-    if (draw) showMessage("LIFT-IT", "Press button to start");
+    // if (draw) showMessage("LIFT-IT", "Press button to start");
     // until the app is connected, the tare button acts as START
     if (appStartRequested || tareBtn.pressed()){
       appStartRequested = false;
@@ -242,7 +254,7 @@ void loop() {
     break;
 
     case ST_WAIT_START:
-      if (draw) showWaitStart(curlName(target), roundNum, score, misses);
+      // if (draw) showWaitStart(curlAction(target), roundNum, score, misses);
       // tare on button press, or automatically after the settle time
       if (tareBtn.pressed() || now - stateEnteredAt > SETTLE_MS){
         startRep();
@@ -268,28 +280,28 @@ void loop() {
       if (draw) {
         unsigned long elapsed = now - stateEnteredAt;
         unsigned long secLeft = elapsed < REP_TIMEOUT_MS ? (REP_TIMEOUT_MS - elapsed) / 1000 : 0;
-        showInRep(curlName(target), rep.angle, rep.reachTop, secLeft);
+        // showInRep(curlAction(target), rep.angle, rep.reachTop, secLeft);
       }
       break;
     }
 
       case ST_FEEDBACK:
         if (draw) {
-          showFeedback(feedbackLine, score, misses);
+          // showFeedback(feedbackLine, score, misses);
         }
         if (now - stateEnteredAt > FEEDBACK_MS ) {
           if (misses >= MAX_MISSES){
-            goGameOVer();
+            goGameOver("max_misses");
           }
           else {
-            startNewGame();
+            nextMove();
           }
         }
         break;  // only runs after the timer ends
 
         case ST_GAME_OVER:
           if (draw) {
-            showGameOver(score);
+            sendGameOver();
           }
           if (appStartRequested || tareBtn.pressed()) {
             appStartRequested = false;
