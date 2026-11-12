@@ -30,7 +30,7 @@ const unsigned long SETTLE_MS      = 3000;  // the wait in WAIT_START ebfore aut
 const unsigned long REP_TIMEOUT_MS = 12000;
 const unsigned long FEEDBACK_MS    = 3000;  // how long the screen stays on
 const unsigned long SAMPLE_MS      = 30;   // 100 Hz sensor loop (BNO055 fusion rate)
-// const unsigned long DRAW_MS         =  30; // oled refresh rate
+const unsigned long DRAW_MS         =  30; //  refresh rate
 const int MAX_MISSES = 3;
 
 // CONNECTION TO THE WEB APP: WIFI LINK
@@ -49,7 +49,7 @@ inline const char* curlAction(CurlType c) {
   switch (c) {    // updated to match web app naming structure
     case CURL_BICEP:    return "bicep";
     case CURL_HAMMER:   return "hammer";
-    case CURL_PREACHER: return "double";
+    case CURL_PREACHER: return "preacher";
     default:            return "none";
   }
 }
