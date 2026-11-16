@@ -236,10 +236,15 @@ void onWsEvent(uint8_t client, WStype_t type, uint8_t* payload, size_t length) {
       break;
   }
 }
-
+// wifi latency is too large and slow
+// use websocket
 void appBegin() {
   if (WIFI_USE_AP) {
+    Serial.println("Setting Wi-Fi mode: "); Serial.flush();
     WiFi.mode(WIFI_AP);
+    Serial.println("Starting hotspot..."); Serial.flush();
+    bool ok = WiFi.softAP(WIFI_SSID, WIFI_PASS);
+    Serial.println("Hotspot started: "); Serial.println(ok ? "yes" : "NO!");
     WiFi.softAP(WIFI_SSID, WIFI_PASS);
   } else {
     WiFi.mode(WIFI_STA);
@@ -250,6 +255,7 @@ void appBegin() {
     }
   }
   WebSockets.begin();
+  Serial.println("Websocket server started"); Serial.flush();
   WebSockets.onEvent(onWsEvent);
   Serial.print("App URL: ");
   Serial.println(appAddress());

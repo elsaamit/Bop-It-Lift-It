@@ -17,7 +17,7 @@ function connect() {
     }
 
     //need to add ESP32 IP address & port
-    socket = new WebSocket('ws://192.168.4.1:8081')
+    socket = new WebSocket('ws://192.168.56.1:8081')
 
     //on opening of socket
     socket.addEventListener('open', () => {
@@ -41,7 +41,7 @@ function connect() {
     })
 
     //graceful error handling
-    socket.addEventListener('error', (e) => {
+    socket.addEventListener('error', () => {
         connectionStatus.value = 'error'
     })
 }

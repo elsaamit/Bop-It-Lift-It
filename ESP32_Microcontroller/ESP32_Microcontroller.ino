@@ -189,6 +189,8 @@ void finishRep(CurlType detected) {
 }
 
 void setup(){
+  appBegin();
+  String addr = appAddress();
   tareBtn.begin();  // setting up the tare pin
   Serial.begin(115200);
   delay(500);
@@ -210,8 +212,8 @@ void setup(){
   // imuBegin();                       // integrated_sensors.ino
 
   
-  appBegin();
-  String addr = appAddress();
+  // appBegin();
+  // String addr = appAddress();
   // showMessage("APP Address: ", addr.c_str());
   delay(2500);
   resetGame();
@@ -300,9 +302,9 @@ void loop() {
         break;  // only runs after the timer ends
 
         case ST_GAME_OVER:
-          if (draw) {
-            sendGameOver();
-          }
+          // if (draw) {
+          //   sendGameOver(reason);
+          // }
           if (appStartRequested || tareBtn.pressed()) {
             appStartRequested = false;
             startNewGame();

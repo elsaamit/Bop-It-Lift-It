@@ -10,7 +10,7 @@
   "dependencies": {
     "core-js": "^3.8.3",
     "vue": "^3.2.13",
-    "vue-router": "^4.6.4",
+    "vue-router": "^4.0.3",
     "ws": "^8.18.0"
   },
   "devDependencies": {
@@ -24,22 +24,10 @@
   },
   "eslintConfig": {
     "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/vue3-essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "@babel/eslint-parser"
-    },
+    "env": { "node": true },
+    "extends": ["plugin:vue/vue3-essential", "eslint:recommended"],
+    "parserOptions": { "parser": "@babel/eslint-parser" },
     "rules": {}
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead",
-    "not ie 11"
-  ]
+  "browserslist": ["> 1%", "last 2 versions", "not dead", "not ie 11"]
 }

@@ -37,8 +37,8 @@ const int MAX_MISSES = 3;
 // false = esp32 joins the existing network
 // true = esp32 makes its own wifi network/hotspot
 const bool WIFI_USE_AP = true;
-const char* const WIFI_SSID = "LiftIt-ESP32";
-const char* const WIFI_PASS = "JDliftit26"; //password has to be 8+ characters
+// const char* const WIFI_SSID = "PittNet";
+// const char* const WIFI_PASS = ""; //password has to be 8+ characters
 const uint16_t WS_PORT = 8081;   // matches the port in websocket.js
 
 //  Shared types 
