@@ -42,6 +42,7 @@ body {
 .title {
   font-size: 64px;
   font-weight: bold;
+  text-align: center;
 }
 
 .container{
@@ -50,9 +51,12 @@ body {
   min-height: 100vh;
 }
 
-.main-content{
+.main-content {
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .dumbbell-image{
@@ -74,6 +78,7 @@ body {
   cursor: pointer;
   margin-top: 35px;
   text-align: center;
+  align-items:center;
 }
 
 .play-button:hover{

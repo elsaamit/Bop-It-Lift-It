@@ -183,6 +183,7 @@
   letter-spacing: 1px;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
+  margin: 0px;
 }
 
 .play-button:hover {
