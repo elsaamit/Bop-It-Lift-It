@@ -1,7 +1,12 @@
 
 const WebSocket = require('ws')
 
-const server = new WebSocket.Server({ port: 8081 })
+// const server = new WebSocket.Server({ port: 8081 })
+const server = new WebSocket.Server({ port: 8081, host: '0.0.0.0'}) // allows connection from any ipaddress (esp32)
+
+// returns who is connected to the server
+let esp32Socket = null  // esp32 connection, based at null
+const apps = new Set()
 
 let gameState = 'ST_IDLE'
 let score = 0
@@ -149,10 +154,38 @@ function stopGame(socket, message){
 //set up
 server.on('connection', (socket) => {
   console.log('web app connected')
+  // every new connection until esp32 is connected, is a web app
+  socket.role = 'app'
+  apps.add(socket)
+  if (esp32Socket) {
+    sendMessage(esp32Socket, { type: 'get_status', request_id: 'server'})
+  }
   socket.on('message', (data) => {
     try {
       const message = JSON.parse(data.toString())
       console.log("received:", message)
+      // esp32 connection confirmation
+      if (message.type === 'hello' && message.role === 'esp32') {
+        apps.delete(socket)
+        socket.role = 'esp32'
+        esp32Socket = socket
+        clearTimeout(resultTime) // stop fake game
+        gameState = 'ST_IDLE'
+        console.log('ESP32 connected')
+        return
+      }
+
+      if (socket.role === 'esp32') {
+        for (const app of apps) {
+          sendMessage(app, message)
+          return
+        }
+      }
+
+      if (esp32Socket) {
+        sendMessage(esp32Socket, message)
+        return
+      }
 
       if(message.type === 'start_game'){
         startGame(socket, message);
@@ -174,8 +207,14 @@ server.on('connection', (socket) => {
   })
 
   socket.on('close', () => {
-    console.log('web app disconnected')
-    clearTimeout(resultTime)
+    if (socket == esp32Socket) {
+      esp32Socket = null
+      console.log('ESP32 disconnected')
+    } else {
+      console.log('web app disconnected')
+      clearTimeout(resultTime)
+    }
+    apps.delete(socket)
   })
 })
 
