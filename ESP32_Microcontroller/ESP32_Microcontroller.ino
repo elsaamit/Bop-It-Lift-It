@@ -5,7 +5,7 @@
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
 #include <ArduinoJson.h> 
-#include <WebSocketsServer.h>
+#include <WebSocketsClient.h>
 #include <WiFi.h>
 
 /*

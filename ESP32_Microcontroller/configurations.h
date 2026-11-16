@@ -36,9 +36,12 @@ const int MAX_MISSES = 3;
 // CONNECTION TO THE WEB APP: WIFI LINK
 // false = esp32 joins the existing network
 // true = esp32 makes its own wifi network/hotspot
+// iphone IP's: 192.168.56.1    OR   ** 172.20.10.2
 const bool WIFI_USE_AP = true;
-// const char* const WIFI_SSID = "PittNet";
-// const char* const WIFI_PASS = ""; //password has to be 8+ characters
+// const char* const WIFI_SSID = "Sira’s iPhone Pro";  // mobile(maximize compatability) OR mobile hotspot on laptop to configure to 
+const char* const WIFI_SSID = "Sira\xE2\x80\x99s iPhone Pro";
+const char* const WIFI_PASS = "LiftIt-HotSpot"; //password has to be 8+ characters
+const char* const WS_HOST = "172.20.10.2";  // hotspot ipaddress 
 const uint16_t WS_PORT = 8081;   // matches the port in websocket.js
 
 //  Shared types 
