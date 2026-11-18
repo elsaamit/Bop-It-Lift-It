@@ -5,10 +5,6 @@
 #define CONFIGURATIONS_H
 #include <Arduino.h>
 
-// AS OF 4:30 11/8:
-//    UPDATED TO be configured to the webapp code 
-//    still integrated the button for tare
-// need to still test
 
 //  Pins (ESP32-WROOM DevKit)  ---> UPDATED 10:54 AM, 11/9/26
 const int PIN_TARE   = 13;  // tare (reset axis) button --> IO13
@@ -70,7 +66,7 @@ inline const char* curlPrompt(CurlType c) {
 inline const char* stateName(GameState s) {
   switch (s) {
     case ST_IDLE:       return "IDLE";
-    case ST_WAIT_START: return "WAIT_START";
+    case ST_WAIT_START: return "WAIT_START"; // duplicate? (look at integrated_sensors.ino to match web app structure)
     case ST_IN_REP:     return "IN_REP";
     case ST_FEEDBACK:   return "FEEDBACK";
     case ST_GAME_OVER:  return "GAME_OVER";
